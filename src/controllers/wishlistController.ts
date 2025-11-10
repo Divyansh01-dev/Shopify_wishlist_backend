@@ -32,7 +32,7 @@ export const addWishlistItem = async (req: Request, res: Response) => {
 
     const exists = await prisma.wishlistItem.findFirst({
       where: {
-        customerId: Number(customerId),
+        customerId,
         productId: productId,
       },
     });
@@ -43,7 +43,7 @@ export const addWishlistItem = async (req: Request, res: Response) => {
 
     await prisma.wishlistItem.create({
       data: {
-        customerId: Number(customerId),
+        customerId,
         productId: productId,
         variantId,
         productTitle: title,
@@ -65,13 +65,36 @@ export const getWishlistItems = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "customer id is required." });
 
     const items = await prisma.wishlistItem.findMany({
-      where: { customerId: Number(customerId) },
+      where: { customerId },
     });
 
     if (!items || items.length === 0)
       return res.status(404).json({ message: "No wishlist items found." });
 
     return res.status(200).json({ data: items });
+  } catch (error) {
+    console.log("Error: ", error);
+    res.status(500).json({ message: "Something went wrong", error });
+  }
+};
+
+export const removeItemFromWishlist = async (req: Request, res: Response) => {
+  try {
+    const { customerId, variantId } = req.params;
+
+    if (!customerId || !variantId)
+      return res
+        .status(400)
+        .json({ message: "customer id and variant id is required." });
+
+    const result = await prisma.wishlistItem.deleteMany({
+      where: { AND: [{ customerId }, { variantId }] },
+    });
+
+    return res.json({
+      message: "Wishlist item removed successfully",
+      deletedCount: result.count,
+    });
   } catch (error) {
     console.log("Error: ", error);
     res.status(500).json({ message: "Something went wrong", error });
