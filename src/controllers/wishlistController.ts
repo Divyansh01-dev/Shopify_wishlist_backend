@@ -32,7 +32,7 @@ export const addWishlistItem = async (req: Request, res: Response) => {
 
     const exists = await prisma.wishlistItem.findFirst({
       where: {
-        customerId: customerId,
+        customerId: Number(customerId),
         productId: productId,
       },
     });
@@ -43,7 +43,7 @@ export const addWishlistItem = async (req: Request, res: Response) => {
 
     await prisma.wishlistItem.create({
       data: {
-        customerId: customerId,
+        customerId: Number(customerId),
         productId: productId,
         variantId,
         productTitle: title,
@@ -55,5 +55,25 @@ export const addWishlistItem = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Wishlist Add Error:", error);
     return res.status(500).json({ error: "Failed to add wishlist item" });
+  }
+};
+
+export const getWishlistItems = async (req: Request, res: Response) => {
+  try {
+    const { customerId } = req.params;
+    if (!customerId)
+      return res.status(400).json({ message: "customer id is required." });
+
+    const items = await prisma.wishlistItem.findMany({
+      where: { customerId: Number(customerId) },
+    });
+
+    if (!items || items.length === 0)
+      return res.status(404).json({ message: "No wishlist items found." });
+
+    return res.status(200).json({ data: items });
+  } catch (error) {
+    console.log("Error: ", error);
+    res.status(500).json({ message: "Something went wrong", error });
   }
 };
