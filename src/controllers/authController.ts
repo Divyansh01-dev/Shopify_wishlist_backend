@@ -50,3 +50,34 @@ export const getAuthInfo = async (
     res.status(500).json({ error: "Internal Server error" });
   }
 };
+
+export const uninstallStore = async (req: Request, res: Response) => {
+  try {
+    const shopDomain = req.headers["x-shopify-shop-domain"] as string;
+
+    if (!shopDomain) {
+      return res.status(400).json({ message: "Shop domain missing" });
+    }
+
+    console.log("App uninstalled by:", shopDomain);
+
+    const shop = await prisma.shop.findUnique({
+      where: { shopifyDomain: shopDomain },
+    });
+
+    if (!shop) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    const shopId = shop.id;
+
+    await prisma.shop.delete({
+      where: { id: shopId },
+    });
+
+    return res.status(200).json({ message: "Shop and related data deleted" });
+  } catch (error) {
+    console.error("Uninstall handler error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
