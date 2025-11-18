@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { getAuthInfo } from "../controllers/authController";
+import { getAuthInfo, uninstallStore } from "../controllers/authController";
 
 const router = Router();
 
 router.post("/", getAuthInfo);
+router.post("/app-uninstalled", uninstallStore);
 
 export default router;
