@@ -6,7 +6,7 @@ import {
 import { verifyApiKey } from "../middleware/auth.middleware";
 
 const router = express.Router();
-router.use(verifyApiKey);
+// router.use(verifyApiKey);
 router.post("/save", saveSettings);
 router.get("/", getSettings);
 
