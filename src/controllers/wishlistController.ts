@@ -16,7 +16,12 @@ export const addWishlistItem = async (
     image,
     price,
   } = req.body as WishlistItemInput;
-
+  const query = req.query;
+  console.log("proxy header", query);
+  console.log("shop:", query.shop);
+  console.log("timestamp:", query.timestamp);
+  console.log("signature:", query.signature);
+  console.log("full query:", query);
   if (!shopifyDomain || !customerId || !productId || !variantId || !title) {
     res.status(400).json({ message: "Missing data fields." });
     return;
@@ -128,11 +133,9 @@ export const removeItemFromWishlist = async (
   const { shopifyDomain, customerId, variantId } = req.params;
 
   if (!shopifyDomain || !customerId || !variantId) {
-    res
-      .status(400)
-      .json({
-        message: "Shopify domain, customer id and variant is required.",
-      });
+    res.status(400).json({
+      message: "Shopify domain, customer id and variant is required.",
+    });
     return;
   }
 
