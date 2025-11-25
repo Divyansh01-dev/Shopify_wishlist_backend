@@ -7,8 +7,7 @@ import {
 import { verifyShopifyProxy } from "../middleware/auth.middleware";
 
 const router = Router();
-// router.use(verifyApiKey);
-// router.use(verifyShopifyProxy);
+router.use(verifyShopifyProxy);
 router.post("/", addWishlistItem);
 router.get("/:shopifyDomain/:customerId", getWishlistItems);
 router.delete("/:shopifyDomain/:customerId/:variantId", removeItemFromWishlist);
