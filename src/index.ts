@@ -4,6 +4,7 @@ import cors from "cors";
 import wishlistRoutes from "./routes/wishlist.routes";
 import authRoutes from "./routes/auth.routes";
 import adminSettingRoutes from "./routes/adminSetting.routes";
+import headlessWishlistRoutes from "./routes/wishlist.headless.routes";
 dotenv.config();
 
 const app = express();
@@ -25,6 +26,7 @@ app.post("/webhooks/app/scopes_update", (req, res) => {
 });
 
 app.use(`/${baseUrl}/wishlist`, wishlistRoutes);
+app.use(`/${baseUrl}/headless/wishlist`, headlessWishlistRoutes);
 app.use(`/${baseUrl}/auth`, authRoutes);
 app.use(`/${baseUrl}/settings`, adminSettingRoutes);
 

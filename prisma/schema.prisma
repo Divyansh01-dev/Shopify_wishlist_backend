@@ -14,12 +14,13 @@ datasource db {
 }
 
 model Shop {
-  id            Int       @id @default(autoincrement())
-  shopifyDomain String    @unique
-  accessToken   String
-  isActive      Boolean   @default(true)
-  installedAt   DateTime  @default(now())
-  uninstalledAt DateTime?
+  id             Int       @id @default(autoincrement())
+  shopifyDomain  String    @unique
+  accessToken    String
+  internalApiKey String?
+  isActive       Boolean   @default(true)
+  installedAt    DateTime  @default(now())
+  uninstalledAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

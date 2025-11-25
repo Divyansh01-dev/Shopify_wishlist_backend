@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 export const getAuthInfo = async (
   req: Request,
@@ -24,17 +26,23 @@ export const getAuthInfo = async (
       where: { shopifyDomain: shop },
     });
 
+    let internalApiKey = existingShop?.internalApiKey;
+    if (!internalApiKey) {
+      internalApiKey = crypto.randomBytes(32).toString("hex");
+    }
+
     if (existingShop) {
       await prisma.shop.update({
         where: { shopifyDomain: shop },
         data: {
           accessToken,
+          internalApiKey,
           isActive: true,
           uninstalledAt: null,
         },
       });
 
-      res.status(200).json({ message: "Shop Updated" });
+      res.status(200).json({ message: "Shop Updated", internalApiKey });
       return;
     }
 
@@ -42,10 +50,11 @@ export const getAuthInfo = async (
       data: {
         shopifyDomain: shop,
         accessToken,
+        internalApiKey,
       },
     });
 
-    res.status(201).json({ message: "shop installed", data });
+    res.status(201).json({ message: "shop installed", internalApiKey, data });
   } catch (error) {
     console.error("Auth error:", error);
     res.status(500).json({ error: "Internal Server error" });
@@ -80,5 +89,69 @@ export const uninstallStore = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Uninstall handler error:", error);
     return res.status(500).json({ error: "Internal server error" });
+  }
+};
+// export const login = async (req: Request, res: Response) => {
+//   try {
+//     const store = req.header("x-shop-domain");
+//     console.log("login store", store);
+//     const internalApiKey = req.header("x-auth-key");
+
+//     if (!store || !internalApiKey) {
+//       return res.status(400).json({ message: "Store not found" });
+//     }
+
+//     const payload = {
+//       shop: store,
+//       internalApiKey: internalApiKey,
+//     };
+
+//     const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+//       expiresIn: "15m",
+//     });
+
+//     return res.status(200).json({
+//       message: "Login successful",
+//       token,
+//     });
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const store = req.header("x-shop-domain");
+    console.log("login store", store);
+
+    const internalApiKey = req.header("x-auth-key");
+
+    if (!store || !internalApiKey) {
+      return res.status(400).json({ message: "Store not found" });
+    }
+
+    const payload = {
+      shop: store,
+      internalApiKey: internalApiKey,
+    };
+
+    const expiresIn = 15 * 60;
+    const expiresAt = Date.now() + expiresIn * 1000;
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET!, {
+      expiresIn: expiresIn,
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      expiresIn: "15m",
+      expiresAt,
+      expiresAtReadable: new Date(expiresAt).toISOString(),
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
