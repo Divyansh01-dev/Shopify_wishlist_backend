@@ -79,6 +79,7 @@ export const getSettings = async (req: Request, res: Response) => {
     const formattedSettings = {
       basic: {
         showWishlistCount: settings.showWishlistCount,
+        pageHeading: settings.pageHeading,
       },
 
       product: {
@@ -86,8 +87,11 @@ export const getSettings = async (req: Request, res: Response) => {
         textColor: settings.textColor,
         productShowIcon: settings.productShowIcon,
         productButtonText: settings.productButtonText,
+        productButtonAfterText: settings.productButtonAfterText,
         productButtonPosition: settings.productButtonPosition,
         productButtonStyle: settings.productButtonStyle,
+        showAddToCart: settings.showAddToCart,
+        addToCartText: settings.addToCartText,
       },
 
       collection: {

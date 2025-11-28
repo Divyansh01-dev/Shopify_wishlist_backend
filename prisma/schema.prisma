@@ -41,10 +41,11 @@ model ShopSettings {
   showWishlistCount Boolean? @default(true)
 
   // Product
-  productShowIcon       Boolean? @default(true)
-  productButtonText     String?
-  productButtonPosition String?
-  productButtonStyle    String?
+  productShowIcon        Boolean? @default(true)
+  productButtonText      String?
+  productButtonAfterText String?
+  productButtonPosition  String?
+  productButtonStyle     String?
 
   // Collection
   collectionShowIcon       Boolean? @default(true)
@@ -53,6 +54,9 @@ model ShopSettings {
   // Wishlist Page
   wishlistLayoutType String?
   showPrice          Boolean? @default(true)
+  pageHeading        String?
+  showAddToCart      Boolean? @default(true)
+  addToCartText      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
