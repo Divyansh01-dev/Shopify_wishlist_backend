@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import wishlistRoutes from "./routes/wishlist.routes";
 import authRoutes from "./routes/auth.routes";
-import adminSettingRoutes from "./routes/adminSetting.routes";
+import adminSettingRoutes from "./routes/admin.setting.routes";
 import headlessWishlistRoutes from "./routes/wishlist.headless.routes";
 dotenv.config();
 

@@ -1,51 +1,90 @@
 import { Request, Response } from "express";
-import prisma from "../db/prisma";
+import { prisma } from "../db/prisma";
+import { Prisma } from "@prisma/client";
+
+const TRANSLATABLE_KEYS = [
+  "productButtonText",
+  "productButtonAfterText",
+  "pageHeading",
+  "addToCartText",
+] as const;
+
+const LOCALE_REGEX = /^[a-z]{2}(-[A-Z]{2})?$/;
+
+const getTranslation = (field: unknown, locale: string): string => {
+  if (!field || typeof field !== "object" || Array.isArray(field)) return "";
+  const dict = field as Record<string, string>;
+  return dict[locale] || dict["en"] || "";
+};
 
 export const saveSettings = async (req: Request, res: Response) => {
   try {
-    const { shop, settings } = req.body;
-    const query = req.query;
-    console.log("full query add setting:", query);
-    if (!shop || !settings) {
+    const { shop, locale = "en", settings } = req.body;
+
+    if (!shop || !settings || typeof settings !== "object") {
       return res
         .status(400)
-        .json({ message: "Shop domain and settings are required." });
+        .json({ message: "Shop domain and settings object required." });
+    }
+
+    if (!LOCALE_REGEX.test(locale)) {
+      return res.status(400).json({ message: "Invalid locale format." });
     }
 
     const shopRecord = await prisma.shop.findUnique({
       where: { shopifyDomain: shop },
+      include: { settings: true },
     });
 
     if (!shopRecord) {
       return res.status(404).json({ message: "Shop not found." });
     }
 
-    const existingSettings = await prisma.shopSettings.findUnique({
-      where: { shopId: shopRecord.id },
-    });
+    const existingSettings = shopRecord.settings;
+    const dataToSave: Record<string, any> = { ...settings };
 
-    let updatedSettings;
+    for (const key of TRANSLATABLE_KEYS) {
+      if (key in settings) {
+        const incomingValue = settings[key];
 
-    if (existingSettings) {
-      updatedSettings = await prisma.shopSettings.update({
-        where: { shopId: shopRecord.id },
-        data: {
-          ...settings,
-        },
-      });
-    } else {
-      updatedSettings = await prisma.shopSettings.create({
-        data: {
-          shopId: shopRecord.id,
-          ...settings,
-        },
-      });
+        if (typeof incomingValue !== "string") {
+          return res.status(400).json({
+            message: `Field '${key}' must be a string.`,
+          });
+        }
+
+        const currentJson =
+          (existingSettings?.[key] as Record<string, any>) || {};
+
+        dataToSave[key] = {
+          ...currentJson,
+          [locale]: incomingValue,
+        };
+      }
     }
 
-    res
-      .status(200)
-      .json({ message: "Settings saved successfully", data: updatedSettings });
+    const result = await prisma.shopSettings.upsert({
+      where: { shopId: shopRecord.id },
+      create: {
+        shopId: shopRecord.id,
+        ...dataToSave,
+      },
+      update: {
+        ...dataToSave,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Settings saved successfully",
+      data: result,
+    });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      console.warn("Invalid settings field sent:", error.message);
+      return res.status(400).json({
+        message: "Invalid field in settings object.",
+      });
+    }
     console.error("Error saving settings:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -53,48 +92,50 @@ export const saveSettings = async (req: Request, res: Response) => {
 
 export const getSettings = async (req: Request, res: Response) => {
   try {
-    const { shop } = req.query;
-    const query = req.query;
-    console.log("full query get settng", query);
-    if (!shop) {
+    const locale = (req.query.locale as string) || "en";
+    const shop = String(req.query.shop);
+
+    if (!req.query.shop) {
       return res.status(400).json({ message: "Shop domain is required." });
     }
 
-    const shopRecord = await prisma.shop.findUnique({
-      where: { shopifyDomain: String(shop) },
+    const shopData = await prisma.shop.findUnique({
+      where: { shopifyDomain: shop },
+      select: {
+        settings: true,
+      },
     });
 
-    if (!shopRecord) {
-      return res.status(404).json({ message: "Shop not found." });
-    }
-
-    const settings = await prisma.shopSettings.findUnique({
-      where: { shopId: shopRecord.id },
-    });
-
-    if (!settings) {
+    if (!shopData || !shopData.settings) {
       return res.status(404).json({ message: "Settings not found." });
     }
 
-    const formattedSettings = {
+    const settings = shopData.settings;
+
+    const formatted = {
       basic: {
         showWishlistCount: settings.showWishlistCount,
+        pageHeading: getTranslation(settings.pageHeading, locale),
       },
-
       product: {
         buttonColor: settings.buttonColor,
         textColor: settings.textColor,
         productShowIcon: settings.productShowIcon,
-        productButtonText: settings.productButtonText,
+        productButtonText: getTranslation(settings.productButtonText, locale),
+        productButtonAfterText: getTranslation(
+          settings.productButtonAfterText,
+          locale
+        ),
+        addToCartText: getTranslation(settings.addToCartText, locale),
+
         productButtonPosition: settings.productButtonPosition,
         productButtonStyle: settings.productButtonStyle,
+        showAddToCart: settings.showAddToCart,
       },
-
       collection: {
         collectionShowIcon: settings.collectionShowIcon,
         collectionButtonPosition: settings.collectionButtonPosition,
       },
-
       wishlist: {
         wishlistLayoutType: settings.wishlistLayoutType,
         showPrice: settings.showPrice,
@@ -103,7 +144,7 @@ export const getSettings = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Settings fetched successfully",
-      data: formattedSettings,
+      data: formatted,
     });
   } catch (error) {
     console.error("Error fetching settings:", error);
