@@ -19,6 +19,9 @@ export const addWishlistItem = async (
     email,
     phone,
   } = req.body;
+  console.log("====================================");
+  console.log("req.body", req.body);
+  console.log("====================================");
   const query = req.query;
   console.log("full query add to wishlist product:", query);
   if (!shopifyDomain || !customerId || !productId || !variantId || !title) {
@@ -40,15 +43,18 @@ export const addWishlistItem = async (
       where: {
         shopId: shop.id,
         shopifyId: customerId,
-        name: name,
-        email: email,
-        phone: phone,
       },
     });
 
     if (!customer) {
       customer = await prisma.customer.create({
-        data: { shopifyId: customerId, shopId: shop.id },
+        data: {
+          shopifyId: customerId,
+          shopId: shop.id,
+          name: name,
+          email: email,
+          phone: phone,
+        },
       });
     }
 
