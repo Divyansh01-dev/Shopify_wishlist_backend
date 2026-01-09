@@ -15,7 +15,10 @@ export const addWishlistItem = async (
     handle,
     image,
     price,
-  } = req.body as WishlistItemInput;
+    name,
+    email,
+    phone,
+  } = req.body;
   const query = req.query;
   console.log("full query add to wishlist product:", query);
   if (!shopifyDomain || !customerId || !productId || !variantId || !title) {
@@ -37,6 +40,9 @@ export const addWishlistItem = async (
       where: {
         shopId: shop.id,
         shopifyId: customerId,
+        name: name,
+        email: email,
+        phone: phone,
       },
     });
 

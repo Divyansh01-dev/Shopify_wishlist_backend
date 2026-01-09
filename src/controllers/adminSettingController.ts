@@ -53,8 +53,12 @@ export const saveSettings = async (req: Request, res: Response) => {
           });
         }
 
+        const rawValue = existingSettings?.[key];
+
         const currentJson =
-          (existingSettings?.[key] as Record<string, any>) || {};
+          rawValue && typeof rawValue === "object" && !Array.isArray(rawValue)
+            ? (rawValue as Record<string, any>)
+            : {};
 
         dataToSave[key] = {
           ...currentJson,
