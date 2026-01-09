@@ -5,6 +5,8 @@ import wishlistRoutes from "./routes/wishlist.routes";
 import authRoutes from "./routes/auth.routes";
 import adminSettingRoutes from "./routes/admin.setting.routes";
 import headlessWishlistRoutes from "./routes/wishlist.headless.routes";
+import analyticalWishlistRoutes from "./routes/analytical.routes";
+
 dotenv.config();
 
 const app = express();
@@ -29,6 +31,7 @@ app.use(`/${baseUrl}/wishlist`, wishlistRoutes);
 app.use(`/${baseUrl}/headless/wishlist`, headlessWishlistRoutes);
 app.use(`/${baseUrl}/auth`, authRoutes);
 app.use(`/${baseUrl}/settings`, adminSettingRoutes);
+app.use(`/${baseUrl}/analytics`, analyticalWishlistRoutes);
 
 app.get("/", (_, res) => {
   return res.status(200).json("Server is running");
