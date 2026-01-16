@@ -7,7 +7,7 @@ import adminSettingRoutes from "./routes/admin.setting.routes";
 import headlessWishlistRoutes from "./routes/wishlist.headless.routes";
 import analyticalWishlistRoutes from "./routes/analytical.routes";
 dotenv.config();
-import "./cron/wishlistEmail.cron";
+import "./utils/wishlistEmail.cron";
 const app = express();
 const baseUrl = "api";
 

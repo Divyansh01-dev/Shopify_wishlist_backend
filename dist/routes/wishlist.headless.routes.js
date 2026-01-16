@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const wishlistController_1 = require("../controllers/wishlistController");
+const verifyToken_1 = require("../middleware/verifyToken");
+const router = (0, express_1.Router)();
+router.post("/", verifyToken_1.verifyToken, wishlistController_1.addWishlistItem);
+router.get("/:shopifyDomain/:customerId", verifyToken_1.verifyToken, wishlistController_1.getWishlistItems);
+router.delete("/:shopifyDomain/:customerId/:variantId", verifyToken_1.verifyToken, wishlistController_1.removeItemFromWishlist);
+exports.default = router;
