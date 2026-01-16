@@ -21,7 +21,7 @@ const shopifyApiClient = (shopifyStoreUrl, shopifyAccessToken) => {
             "X-Shopify-Access-Token": shopifyAccessToken,
             "Content-Type": "application/json",
         },
-        timeout: 30000, // 30 seconds timeout
+        timeout: 30000,
     });
 };
 exports.shopifyApiClient = shopifyApiClient;

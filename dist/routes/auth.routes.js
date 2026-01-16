@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authController_1 = require("../controllers/authController");
+const auth_login_1 = require("../middleware/auth.login");
 const router = (0, express_1.Router)();
 router.post("/", authController_1.getAuthInfo);
+router.post("/login", auth_login_1.verifyShopKey, authController_1.login);
+router.post("/app-uninstalled", authController_1.uninstallStore);
 exports.default = router;

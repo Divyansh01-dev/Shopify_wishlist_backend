@@ -6,7 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.removeItemFromWishlist = exports.getWishlistItems = exports.addWishlistItem = void 0;
 const prisma_1 = __importDefault(require("../db/prisma"));
 const addWishlistItem = async (req, res) => {
-    const { shopifyDomain, customerId, productId, variantId, title, handle, image, price, } = req.body;
+    const { shopifyDomain, customerId, productId, variantId, title, handle, image, price, name, email, phone, } = req.body;
+    console.log("====================================");
+    console.log("req.body", req.body);
+    console.log("====================================");
+    const query = req.query;
+    console.log("full query add to wishlist product:", query);
     if (!shopifyDomain || !customerId || !productId || !variantId || !title) {
         res.status(400).json({ message: "Missing data fields." });
         return;
@@ -27,7 +32,13 @@ const addWishlistItem = async (req, res) => {
         });
         if (!customer) {
             customer = await prisma_1.default.customer.create({
-                data: { shopifyId: customerId, shopId: shop.id },
+                data: {
+                    shopifyId: customerId,
+                    shopId: shop.id,
+                    name: name,
+                    email: email,
+                    phone: phone,
+                },
             });
         }
         const existingItem = await prisma_1.default.wishlistItem.findFirst({
@@ -66,6 +77,8 @@ const addWishlistItem = async (req, res) => {
 exports.addWishlistItem = addWishlistItem;
 const getWishlistItems = async (req, res) => {
     const { shopifyDomain, customerId } = req.params;
+    const query = req.query;
+    console.log("full query get to wishlist product:", query);
     if (!shopifyDomain || !customerId) {
         res
             .status(400)
@@ -99,10 +112,10 @@ const getWishlistItems = async (req, res) => {
 exports.getWishlistItems = getWishlistItems;
 const removeItemFromWishlist = async (req, res) => {
     const { shopifyDomain, customerId, variantId } = req.params;
+    const query = req.query;
+    console.log("full query remove to wishlist product:", query);
     if (!shopifyDomain || !customerId || !variantId) {
-        res
-            .status(400)
-            .json({
+        res.status(400).json({
             message: "Shopify domain, customer id and variant is required.",
         });
         return;

@@ -1,11 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const analyticalController_1 = require("../controllers/analyticalController");
 const wishlistController_1 = require("../controllers/wishlistController");
-const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
-router.use(auth_middleware_1.verifyShopifyProxy);
-router.post("/", wishlistController_1.addWishlistItem);
+router.get("/:shopifyDomain/products", analyticalController_1.getWishlistProductAnalytics);
+router.get("/:shopifyDomain/customers", analyticalController_1.getWishlistCustomerAnalytics);
 router.get("/:shopifyDomain/:customerId", wishlistController_1.getWishlistItems);
-router.delete("/:shopifyDomain/:customerId/:variantId", wishlistController_1.removeItemFromWishlist);
 exports.default = router;
